@@ -1,0 +1,14 @@
+{
+  "name": "charity-core",
+  "version": "0.1.0",
+  "description": "Shared brand-agnostic server/UI logic for the charity web apps (consumed as a git dependency; compiled by the host app via Next transpilePackages).",
+  "license": "UNLICENSED",
+  "private": false,
+  "files": [
+    "src"
+  ],
+  "peerDependencies": {
+    "next": ">=14",
+    "react": ">=18"
+  }
+}
