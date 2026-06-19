@@ -10,7 +10,6 @@ published package. Consuming apps mount it as a git submodule and compile the
 | Path | Purpose |
 |------|---------|
 | `src/lib/site-url.ts` | Resolve the canonical site URL from env |
-| `src/lib/email.ts` | `sendEmail` (Resend) + `escapeHtml` + `notifyAddress` |
 | `src/lib/rate-limit.ts` | Per-IP rate limit + honeypot guard for public forms |
 | `src/lib/unsubscribe.ts` | Signed HMAC unsubscribe tokens + URLs |
 | `src/lib/supabase-storage.ts` | Server-side uploads to Supabase Storage |
