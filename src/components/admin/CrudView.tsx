@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "../Icon";
@@ -51,6 +52,14 @@ export type CrudConfig = {
    * populated only by public form submissions (Volunteers, ContactMessages).
    */
   noCreate?: boolean;
+  /**
+   * When set, each row shows a link button (before Edit) to a related detail
+   * page — e.g. an event's attendee/RSVP list. Return the href for a given row.
+   */
+  rowHref?: (row: Record<string, any>) => string;
+  /** Icon + tooltip for the {@link rowHref} button. */
+  rowHrefIcon?: string;
+  rowHrefTitle?: string;
 };
 
 type Row = Record<string, any>;
@@ -223,6 +232,19 @@ export function CrudView({
                         whiteSpace: "nowrap",
                       }}
                     >
+                      {config.rowHref && (
+                        <Link
+                          href={config.rowHref(r)}
+                          title={config.rowHrefTitle ?? "Open"}
+                          style={{ ...iconBtn, display: "inline-flex" }}
+                        >
+                          <Icon
+                            name={config.rowHrefIcon ?? "external"}
+                            size={16}
+                            color="var(--color-body)"
+                          />
+                        </Link>
+                      )}
                       <button
                         onClick={() => setEditing(r)}
                         title="Edit"
