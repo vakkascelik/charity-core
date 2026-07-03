@@ -54,9 +54,12 @@ export type CrudConfig = {
   noCreate?: boolean;
   /**
    * When set, each row shows a link button (before Edit) to a related detail
-   * page — e.g. an event's attendee/RSVP list. Return the href for a given row.
+   * page — e.g. an event's attendee/RSVP list. A URL template with `:key`
+   * placeholders filled from the row, e.g. "/admin/events/:id/rsvps".
+   * Must be a plain string, NOT a function: CrudView is a Client Component and
+   * every prop crossing the Server→Client boundary has to be serialisable.
    */
-  rowHref?: (row: Record<string, any>) => string;
+  rowHref?: string;
   /** Icon + tooltip for the {@link rowHref} button. */
   rowHrefIcon?: string;
   rowHrefTitle?: string;
@@ -234,7 +237,7 @@ export function CrudView({
                     >
                       {config.rowHref && (
                         <Link
-                          href={config.rowHref(r)}
+                          href={fillHref(config.rowHref, r)}
                           title={config.rowHrefTitle ?? "Open"}
                           style={{ ...iconBtn, display: "inline-flex" }}
                         >
@@ -302,6 +305,13 @@ const iconBtn: React.CSSProperties = {
   padding: 7,
   borderRadius: 7,
 };
+
+/** Fill a rowHref template like "/admin/events/:id/rsvps" from a row's fields. */
+function fillHref(template: string, row: Row): string {
+  return template.replace(/:(\w+)/g, (_, k) =>
+    encodeURIComponent(String(row[k] ?? "")),
+  );
+}
 
 function singularize(s: string) {
   return s.replace(/s$/, "");

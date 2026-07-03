@@ -42,7 +42,7 @@
 | `src/components/Icon.tsx` | SVG icon set (path registry; pure geometry) | react |
 | `src/components/Btn.tsx` | Button — kinds/sizes themed via app CSS vars (`--color-*`) | react, `./Icon` |
 | `src/components/Pill.tsx` | Tag pill — tones themed via app CSS vars (`--pill-*-bg/-fg`, see below) | react |
-| `src/components/admin/CrudView.tsx` | Generic admin CRUD table+form; formats via `useFormat()`. Optional `rowHref(row)`/`rowHrefIcon`/`rowHrefTitle` add a per-row link button (before Edit) to a related detail page — e.g. an event's attendee list | primitives, `./format-context` |
+| `src/components/admin/CrudView.tsx` | Generic admin CRUD table+form; formats via `useFormat()`. Optional `rowHref`/`rowHrefIcon`/`rowHrefTitle` add a per-row link button (before Edit) to a related detail page — e.g. an event's attendee list. `rowHref` is a **URL template string** with `:key` placeholders (e.g. `"/admin/events/:id/rsvps"`), filled from the row — **not** a function: CrudView is a Client Component, so props from a Server Component must be serialisable | primitives, `./format-context` |
 | `src/components/admin/primitives.tsx` | Admin table/card style consts + `PageTitle`/`CardHead`/`StatusBadge` | `../Pill` |
 | `src/components/admin/ImageInput.tsx` | Single + gallery image upload widgets | `../Icon` |
 | `src/components/admin/charts.tsx` | Admin chart primitives (self-contained SVG) | react |
