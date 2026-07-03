@@ -38,19 +38,32 @@
 `package.json` exists only so npm can install the repo as a dependency. There is
 no `main`/build; `files: ["src"]` ships the source.
 
-## How host apps consume it
+## How host apps consume it (git subtree — since 2026-07)
+
+This repo is vendored INSIDE each app as a **git subtree** at `core/`
+(the shop-template pattern; works on Railway because files are physically in
+the app repo — submodules do NOT work there, and the previous npm git
+dependency required a separate re-lock step).
 
 ```jsonc
-// app package.json
-"dependencies": { "charity-core": "github:vakkascelik/charity-core" }
-// app next.config.mjs
-transpilePackages: ["charity-core"]
 // app tsconfig.json
-"paths": { "@core/*": ["./node_modules/charity-core/src/*"] }
+"paths": { "@core/*": ["./core/src/*"] }
+// app package.json scripts
+"sync:core": "git subtree pull --prefix=core core main --squash",
+"push:core": "git subtree push --prefix=core core main"
+// one-time app setup
+git remote add core https://github.com/vakkascelik/charity-core.git
+git subtree add --prefix=core core main --squash
 // usage
 import { useHoneypot } from "@core/components/Honeypot";
 import { publicFormGuard } from "@core/lib/rate-limit";
 ```
+
+**Workflow:** edit files under `core/` in whichever app you're working in,
+commit as usual, run `npm run push:core` to publish here; other apps run
+`npm run sync:core` to pick it up. **Nothing org-specific may land here** —
+no names, colors, URLs, Prisma, or app `auth` imports; pass brand values as
+parameters (see `email-template.ts`).
 
 The exact commit is pinned in each app's `package-lock.json`; Railway's `npm ci`
 fetches it — **no `.git` is needed at build time** (see Gotchas).
