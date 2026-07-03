@@ -39,6 +39,23 @@
 | `src/components/JsonLd.tsx` | schema.org JSON-LD `<script>` renderer (XSS-safe) | react |
 | `src/components/Honeypot.tsx` | `useHoneypot()` hidden-field spam trap | react |
 | `src/components/LogoMarquee.tsx` | Auto-scrolling logo strip (self-contained `<style>`, hover-pause, reduced-motion) | react |
+| `src/components/Icon.tsx` | SVG icon set (path registry; pure geometry) | react |
+| `src/components/Btn.tsx` | Button — kinds/sizes themed via app CSS vars (`--color-*`) | react, `./Icon` |
+| `src/components/Pill.tsx` | Tag pill — tones themed via app CSS vars (`--pill-*-bg/-fg`, see below) | react |
+| `src/components/admin/CrudView.tsx` | Generic admin CRUD table+form; formats via `useFormat()` | primitives, `./format-context` |
+| `src/components/admin/primitives.tsx` | Admin table/card style consts + `PageTitle`/`CardHead`/`StatusBadge` | `../Pill` |
+| `src/components/admin/ImageInput.tsx` | Single + gallery image upload widgets | `../Icon` |
+| `src/components/admin/charts.tsx` | Admin chart primitives (self-contained SVG) | react |
+| `src/components/admin/format-context.tsx` | `FormatProvider`/`useFormat()` — injects locale/currency-bound `fmtDate`/`fmtMoney` into admin components | `../../lib/format` |
+
+**Two contracts the host app must satisfy:**
+- **Pill CSS vars.** `Pill` reads `--pill-coral-bg`, `--pill-teal-bg`, `--pill-amber-bg`,
+  `--pill-amber-fg`, `--pill-dark-bg` from the app's global stylesheet. Define them
+  per brand (PIF's live in `src/app/globals.css`).
+- **FormatProvider.** `CrudView` (and anything calling `useFormat()`) needs a
+  `<FormatProvider locale currency>` ancestor. The app's `AdminShell` supplies it
+  from `charity.config` (`locale`/`currency`). Without a provider it falls back to
+  a neutral `en-US`/`USD`.
 
 `package.json` is retained for metadata only; there is no `main`/build — apps
 compile the source directly from their `core/` subtree.
