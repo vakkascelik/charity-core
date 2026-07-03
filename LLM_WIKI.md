@@ -8,14 +8,14 @@
 
 1. **This is a source-only shared library** — no build, no publish. It holds the
    brand-agnostic logic used by the charity web apps (PIF, Raindrops).
-2. **Consumed as an npm git dependency**, not a submodule:
-   `"charity-core": "github:vakkascelik/charity-core"`. Host apps compile the
-   raw `.ts`/`.tsx` via Next `transpilePackages`.
+2. **Vendored in each app as a git subtree at `core/`** (not a submodule, not
+   an npm dependency). Apps import via the `@core/*` alias → `./core/src/*`.
 3. **Everything here must stay brand-agnostic and env-configured.** No org names,
    colors, locales, currencies, Prisma client, or app `auth` imports. If a module
    needs those, it belongs in the app, not here.
-4. **A change here ships to both apps only after** they re-lock the dependency
-   (`npm install charity-core@github:vakkascelik/charity-core`).
+4. **A change ships via subtree:** edit `core/` in an app → `npm run push:core`
+   → other apps `npm run sync:core`. (Editing this repo directly also works —
+   apps then just `npm run sync:core`.)
 5. **Verify before pushing:** the consuming apps must still `npx tsc --noEmit`
    and `next build` clean. This repo has no build of its own to test against, so
    test through a host app.
@@ -35,8 +35,8 @@
 | `src/components/Honeypot.tsx` | `useHoneypot()` hidden-field spam trap | react |
 | `src/components/LogoMarquee.tsx` | Auto-scrolling logo strip (self-contained `<style>`, hover-pause, reduced-motion) | react |
 
-`package.json` exists only so npm can install the repo as a dependency. There is
-no `main`/build; `files: ["src"]` ships the source.
+`package.json` is retained for metadata only; there is no `main`/build — apps
+compile the source directly from their `core/` subtree.
 
 ## How host apps consume it (git subtree — since 2026-07)
 
@@ -65,18 +65,13 @@ commit as usual, run `npm run push:core` to publish here; other apps run
 no names, colors, URLs, Prisma, or app `auth` imports; pass brand values as
 parameters (see `email-template.ts`).
 
-The exact commit is pinned in each app's `package-lock.json`; Railway's `npm ci`
-fetches it — **no `.git` is needed at build time** (see Gotchas).
-
 ## Update workflow
 
 ```
-1. Edit a module here → verify: it's still brand-agnostic + env-only.
-2. git commit + git push (this repo).
-3. In EACH app: npm install charity-core@github:vakkascelik/charity-core
-   → re-locks package-lock.json to the new commit.
-4. Verify: npx tsc --noEmit && npx next build  (in the app).
-5. Commit package.json + package-lock.json in the app, push.
+1. Edit files under core/ in the app you're working in (or here directly).
+2. Verify in the app: npx tsc --noEmit (and next build for bigger changes).
+3. Commit in the app, git push (the app repo), then: npm run push:core
+4. In the OTHER app: npm run sync:core → commit the merge → push.
 ```
 
 ## Guidelines for agents (Karpathy)
@@ -91,12 +86,13 @@ fetches it — **no `.git` is needed at build time** (see Gotchas).
 
 ## Gotchas / hard constraints
 
-- **Why npm, not a git submodule:** Railway's Railpack builder copies the repo
-  tree into the build container **without `.git`**, so `git submodule update`
-  fails (`fatal: not a git repository`). An npm git dependency needs no `.git`.
+- **Why subtree, not a git submodule:** Railway's Railpack builder copies the
+  repo tree into the build container **without `.git`**, so `git submodule
+  update` fails (`fatal: not a git repository`). A subtree's files are
+  physically part of the app repo — nothing to resolve at build time.
 - **No DB / no brand here.** This package must never import a Prisma client, the
   app's `auth`, or hardcode brand strings. Those differ per app
   (PIF = NZD/en-NZ/Auckland; Raindrops = USD/en-US/San Antonio).
-- **Untranspiled source.** Files ship as `.ts`/`.tsx`; they only work in a host
-  that lists `charity-core` in `transpilePackages`. Don't add a build step.
+- **Untranspiled source.** Files are `.ts`/`.tsx` compiled by the host app's
+  Next build via the `core/` subtree. Don't add a build step.
 - **Push after commit** (project rule across all repos).
