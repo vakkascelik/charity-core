@@ -28,8 +28,12 @@
 | `src/lib/rate-limit.ts` | Per-IP rate limit + honeypot guard for public forms | `next/server` |
 | `src/lib/unsubscribe.ts` | Signed HMAC unsubscribe tokens + URLs (`AUTH_SECRET`) | `site-url`, `crypto` |
 | `src/lib/supabase-storage.ts` | Server-side uploads to Supabase Storage `media` bucket | env |
+| `src/lib/labels.ts` | `normalizeLabels()` — comma string / array → clean deduped string[] | — |
+| `src/lib/pdf.ts` | `compressPdf()` — lossless PDF re-serialise (object streams) | `pdf-lib` (peer) |
+| `src/lib/email-template.ts` | `brandedEmailHtml()` + `escapeHtml()` — brand-parameterized HTML email wrapper | — |
 | `src/components/JsonLd.tsx` | schema.org JSON-LD `<script>` renderer (XSS-safe) | react |
 | `src/components/Honeypot.tsx` | `useHoneypot()` hidden-field spam trap | react |
+| `src/components/LogoMarquee.tsx` | Auto-scrolling logo strip (self-contained `<style>`, hover-pause, reduced-motion) | react |
 
 `package.json` exists only so npm can install the repo as a dependency. There is
 no `main`/build; `files: ["src"]` ships the source.
