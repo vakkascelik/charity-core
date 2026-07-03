@@ -35,6 +35,7 @@
 | `src/lib/stripe.ts` | `getStripe()` cached client + `stripeConfigured()` | `stripe` (peer) |
 | `src/lib/safe-query.ts` | `safe(promise, fallback)` — swallow DB errors during prerender/ISR | — |
 | `src/lib/revalidate.ts` | `revalidatePublic()` — drop the ISR cache under the root layout | `next/cache` |
+| `src/lib/format.ts` | `fmtDate`/`fmtMoney`/`fmtNumber` (locale/currency as args) + `fmtDuration`/`slugify` | — |
 | `src/components/JsonLd.tsx` | schema.org JSON-LD `<script>` renderer (XSS-safe) | react |
 | `src/components/Honeypot.tsx` | `useHoneypot()` hidden-field spam trap | react |
 | `src/components/LogoMarquee.tsx` | Auto-scrolling logo strip (self-contained `<style>`, hover-pause, reduced-motion) | react |
