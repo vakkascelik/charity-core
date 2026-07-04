@@ -8,7 +8,13 @@
     "src"
   ],
   "peerDependencies": {
+    "@anthropic-ai/sdk": ">=0.110",
     "next": ">=14",
     "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    }
   }
 }

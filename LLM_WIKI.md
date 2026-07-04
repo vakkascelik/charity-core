@@ -32,6 +32,7 @@
 | `src/lib/pdf.ts` | `compressPdf()` — lossless PDF re-serialise (object streams) | `pdf-lib` (peer) |
 | `src/lib/email-template.ts` | `brandedEmailHtml()` + `escapeHtml()` — brand-parameterized HTML email wrapper | — |
 | `src/lib/email.ts` | `sendEmail()` — Resend transport; caller supplies the brand `from` | env (`RESEND_*`) |
+| `src/lib/ai.ts` | `draftStructured(args, requiredKeys)` — one structured Claude call (`claude-opus-4-8`, adaptive thinking, `output_config.format` JSON schema) returning a tagged `{ok}` outcome; `aiConfigured()` guard; `guidanceLine()`. Each admin `/generate` route = a system prompt + schema | `@anthropic-ai/sdk` (peer, **optional** — dormant until an app imports it) |
 | `src/lib/stripe.ts` | `getStripe()` cached client + `stripeConfigured()` | `stripe` (peer) |
 | `src/lib/safe-query.ts` | `safe(promise, fallback)` — swallow DB errors during prerender/ISR | — |
 | `src/lib/revalidate.ts` | `revalidatePublic()` — drop the ISR cache under the root layout | `next/cache` |
@@ -42,7 +43,7 @@
 | `src/components/Icon.tsx` | SVG icon set (path registry; pure geometry) | react |
 | `src/components/Btn.tsx` | Button — kinds/sizes themed via app CSS vars (`--color-*`) | react, `./Icon` |
 | `src/components/Pill.tsx` | Tag pill — tones themed via app CSS vars (`--pill-*-bg/-fg`, see below) | react |
-| `src/components/admin/CrudView.tsx` | Generic admin CRUD table+form; formats via `useFormat()`. Optional `rowHref`/`rowHrefIcon`/`rowHrefTitle` add a per-row link button (before Edit) to a related detail page — e.g. an event's attendee list. `rowHref` is a **URL template string** with `:key` placeholders (e.g. `"/admin/events/:id/rsvps"`), filled from the row — **not** a function: CrudView is a Client Component, so props from a Server Component must be serialisable | primitives, `./format-context` |
+| `src/components/admin/CrudView.tsx` | Generic admin CRUD table+form; formats via `useFormat()`. Optional `rowHref`/`rowHrefIcon`/`rowHrefTitle` add a per-row link button (before Edit) to a related detail page — e.g. an event's attendee list. `rowHref` is a **URL template string** with `:key` placeholders (e.g. `"/admin/events/:id/rsvps"`), filled from the row — **not** a function: CrudView is a Client Component, so props from a Server Component must be serialisable. Optional `aiAssist` (`{endpoint, fields[], hint?, placeholder?}`) adds a "Draft with AI" box to the edit drawer — POSTs `{instruction, ...currentFieldValues}` to `endpoint` and merges returned field keys into the form | primitives, `./format-context` |
 | `src/components/admin/primitives.tsx` | Admin table/card style consts + `PageTitle`/`CardHead`/`StatusBadge` | `../Pill` |
 | `src/components/admin/ImageInput.tsx` | Single + gallery image upload widgets | `../Icon` |
 | `src/components/admin/charts.tsx` | Admin chart primitives (self-contained SVG) | react |

@@ -63,6 +63,20 @@ export type CrudConfig = {
   /** Icon + tooltip for the {@link rowHref} button. */
   rowHrefIcon?: string;
   rowHrefTitle?: string;
+  /**
+   * When set, the create/edit drawer shows a "Draft with AI" box. It POSTs
+   * `{ instruction, ...currentValuesForListedFields }` to {@link AiAssist.endpoint}
+   * and merges the returned field keys back into the form. The endpoint decides
+   * whether to draft (empty fields) or polish (existing content).
+   */
+  aiAssist?: {
+    endpoint: string;
+    /** Form field keys the AI reads as context and writes back. */
+    fields: string[];
+    label?: string;
+    hint?: string;
+    placeholder?: string;
+  };
 };
 
 type Row = Record<string, any>;
@@ -360,6 +374,38 @@ function EditDrawer({
   const set = (k: string, v: unknown) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  const ai = config.aiAssist;
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiErr, setAiErr] = useState<string | null>(null);
+  const aiHasContent = !!ai && ai.fields.some((k) => String(form[k] ?? "").trim());
+
+  async function runAi() {
+    if (!ai) return;
+    setAiBusy(true);
+    setAiErr(null);
+    try {
+      const context: Record<string, unknown> = { instruction: aiPrompt };
+      for (const k of ai.fields) context[k] = form[k] ?? "";
+      const res = await fetch(ai.endpoint, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(context),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "AI request failed");
+      setForm((f) => {
+        const next = { ...f };
+        for (const k of ai.fields) if (data[k] !== undefined) next[k] = data[k];
+        return next;
+      });
+    } catch (e) {
+      setAiErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setAiBusy(false);
+    }
+  }
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 200 }}>
       <div
@@ -418,6 +464,47 @@ function EditDrawer({
             gap: 16,
           }}
         >
+          {ai && (
+            <div
+              style={{
+                background: "var(--color-surface-soft)",
+                border: "1px solid var(--color-hairline)",
+                borderRadius: 12,
+                padding: 16,
+              }}
+            >
+              <label style={{ ...lbl, display: "flex", alignItems: "center", gap: 7 }}>
+                <Icon name="star" size={15} color="var(--color-primary)" />
+                {ai.label ?? "Draft with AI"}
+              </label>
+              <p style={{ fontSize: 12.5, color: "var(--color-muted)", margin: "0 0 10px" }}>
+                {ai.hint ??
+                  "Describe it to draft from scratch, or leave blank to polish what's below."}
+              </p>
+              <textarea
+                style={{ ...txtarea, minHeight: 68, background: "var(--color-canvas)" }}
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder={ai.placeholder}
+              />
+              <div style={{ marginTop: 10 }}>
+                <Btn
+                  kind="secondary"
+                  size="sm"
+                  icon="star"
+                  onClick={runAi}
+                  disabled={aiBusy || (!aiPrompt.trim() && !aiHasContent)}
+                >
+                  {aiBusy ? "Writing…" : aiHasContent ? "Draft / polish" : "Draft"}
+                </Btn>
+              </div>
+              {aiErr && (
+                <p style={{ fontSize: 13, color: "var(--color-error)", margin: "10px 0 0" }}>
+                  {aiErr}
+                </p>
+              )}
+            </div>
+          )}
           {config.fields.map((f) => (
             <div key={f.key}>
               <label style={lbl}>{f.label}</label>
