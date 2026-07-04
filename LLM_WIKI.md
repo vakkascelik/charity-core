@@ -47,6 +47,7 @@
 | `src/components/admin/ImageInput.tsx` | Single + gallery image upload widgets | `../Icon` |
 | `src/components/admin/charts.tsx` | Admin chart primitives (self-contained SVG) | react |
 | `src/components/admin/format-context.tsx` | `FormatProvider`/`useFormat()` — injects locale/currency-bound `fmtDate`/`fmtMoney` into admin components | `../../lib/format` |
+| `src/components/admin/ui-feedback.tsx` | `AdminFeedbackProvider` + `useToast()`/`useConfirm()` — non-blocking toasts and an async confirm dialog to replace `alert()`/`confirm()`. Brand-agnostic (status colours read app CSS vars with neutral fallbacks). **Not yet wired** — wrap the admin root in `<AdminFeedbackProvider>` to enable | react |
 
 **Two contracts the host app must satisfy:**
 - **Pill CSS vars.** `Pill` reads `--pill-coral-bg`, `--pill-teal-bg`, `--pill-amber-bg`,
