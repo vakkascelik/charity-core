@@ -14,6 +14,7 @@ import {
 } from "./primitives";
 import { useFormat } from "./format-context";
 import { ImageInput, GalleryInput } from "./ImageInput";
+import { QuestionsEditor } from "./QuestionsEditor";
 
 type FieldType =
   | "text"
@@ -23,7 +24,9 @@ type FieldType =
   | "toggle"
   | "select"
   | "tags"
-  | "images";
+  | "images"
+  /** Custom form-question builder — see {@link QuestionsEditor}. */
+  | "questions";
 
 export type CrudField = {
   key: string;
@@ -510,6 +513,11 @@ function EditDrawer({
               <label style={lbl}>{f.label}</label>
               {f.type === "images" ? (
                 <GalleryInput
+                  value={form[f.key] ?? []}
+                  onChange={(v) => set(f.key, v)}
+                />
+              ) : f.type === "questions" ? (
+                <QuestionsEditor
                   value={form[f.key] ?? []}
                   onChange={(v) => set(f.key, v)}
                 />
