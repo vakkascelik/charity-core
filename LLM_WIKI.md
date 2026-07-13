@@ -43,6 +43,9 @@
 | `src/components/Icon.tsx` | SVG icon set (path registry; pure geometry) | react |
 | `src/components/Btn.tsx` | Button — kinds/sizes themed via app CSS vars (`--color-*`) | react, `./Icon` |
 | `src/components/Pill.tsx` | Tag pill — tones themed via app CSS vars (`--pill-*-bg/-fg`, see below) | react |
+| `src/components/Eyebrow.tsx` | Small kicker label above a heading (accent rule + uppercase caption); `color` prop, defaults to `--color-primary` | react |
+| `src/components/StatGrid.tsx` | Row of big-number stat tiles (`{id,value,label}[]`), e.g. "20+ Years of service". `columns`, `valueSize`/`labelSize`, `tabletTwoCol` (steps to 2 cols at the `980px` breakpoint instead of collapsing straight to 1 — relies on the host app's `.grid-N`/`.grid-N-md` CSS utility classes, e.g. PIF's `globals.css`) | react |
+| `src/components/Timeline.tsx` | "Our story" section: `Eyebrow` + `<h2>` heading over an N-column row of `{id,year,title,body}` milestones, column count = `milestones.length` | react, `./Eyebrow` |
 | `src/components/admin/CrudView.tsx` | Generic admin CRUD table+form; formats via `useFormat()`. Optional `rowHref`/`rowHrefIcon`/`rowHrefTitle` add a per-row link button (before Edit) to a related detail page — e.g. an event's attendee list. `rowHref` is a **URL template string** with `:key` placeholders (e.g. `"/admin/events/:id/rsvps"`), filled from the row — **not** a function: CrudView is a Client Component, so props from a Server Component must be serialisable. Optional `aiAssist` (`{endpoint, fields[], hint?, placeholder?}`) adds a "Draft with AI" box to the edit drawer — POSTs `{instruction, ...currentFieldValues}` to `endpoint` and merges returned field keys into the form. Field type `"questions"` renders `QuestionsEditor` | primitives, `./format-context`, `./QuestionsEditor` |
 | `src/components/admin/primitives.tsx` | Admin table/card style consts + `PageTitle`/`CardHead`/`StatusBadge` | `../Pill` |
 | `src/components/admin/ImageInput.tsx` | Single + gallery image upload widgets | `../Icon` |
@@ -60,6 +63,12 @@
   `<FormatProvider locale currency>` ancestor. The app's `AdminShell` supplies it
   from `charity.config` (`locale`/`currency`). Without a provider it falls back to
   a neutral `en-US`/`USD`.
+- **`.grid-N` / `.grid-N-md` CSS utilities.** `StatGrid` and `Timeline` set
+  `className="grid-N"` (mobile: collapse to 1 column) and, opt-in via
+  `tabletTwoCol`, `grid-N-md` (tablet: 2 columns). The app's global stylesheet
+  must define these breakpoints (PIF's live in `src/app/globals.css`) or the
+  grids just won't collapse on small screens — the components still render fine,
+  it's a responsive-only dependency.
 
 `package.json` is retained for metadata only; there is no `main`/build — apps
 compile the source directly from their `core/` subtree.
