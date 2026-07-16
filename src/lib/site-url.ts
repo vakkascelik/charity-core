@@ -26,3 +26,10 @@ export function getSiteUrl(): string {
   const isLocal = /^(localhost|127\.|0\.0\.0\.0)/i.test(trimmed);
   return `${isLocal ? "http" : "https"}://${trimmed}`;
 }
+
+/** Absolute URL for a site-relative path (e.g. "/news/foo" → "https://…/news/foo"). */
+export function absoluteUrl(path = ""): string {
+  const base = getSiteUrl();
+  if (!path) return base;
+  return `${base}${path.startsWith("/") ? "" : "/"}${path}`;
+}
