@@ -9,12 +9,18 @@ export function LineChart({
   color = "var(--color-primary)",
   height = 200,
   dots = true,
+  showValues = false,
+  formatValue = (n: number) => String(n),
 }: {
   data: number[];
   labels: string[];
   color?: string;
   height?: number;
   dots?: boolean;
+  /** Print each point's value above it (only legible for ≲12 points). */
+  showValues?: boolean;
+  /** Formats values in labels + hover tooltips (e.g. thousands separators). */
+  formatValue?: (n: number) => string;
 }) {
   if (data.length === 0) return null;
   const w = 640;
@@ -31,6 +37,8 @@ export function LineChart({
     path +
     ` L ${x(data.length - 1)} ${h - pad} L ${x(0)} ${h - pad} Z`;
   const gradId = `lg-${color.replace(/[^a-z0-9]/gi, "")}`;
+  // Keep the x-axis readable: show at most ~8 date labels evenly spaced.
+  const labelStep = Math.max(1, Math.ceil(data.length / 8));
   return (
     <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", height: "auto" }}>
       <defs>
@@ -61,20 +69,43 @@ export function LineChart({
       />
       {dots &&
         pts.map((p, i) => (
-          <circle key={i} cx={p[0]} cy={p[1]} r="3" fill={color} />
+          <circle key={`d${i}`} cx={p[0]} cy={p[1]} r="3" fill={color} />
         ))}
-      {labels.map((l, i) => (
-        <text
-          key={i}
-          x={x(i)}
-          y={h - 8}
-          fontSize="10"
-          fill="var(--color-muted)"
-          textAnchor="middle"
-        >
-          {l}
-        </text>
+      {showValues &&
+        pts.map((p, i) => (
+          <text
+            key={`v${i}`}
+            x={p[0]}
+            y={p[1] - 8}
+            fontSize="10"
+            fontWeight="600"
+            fill="var(--color-ink)"
+            textAnchor="middle"
+          >
+            {formatValue(data[i])}
+          </text>
+        ))}
+      {/* Invisible wide hit-targets so hovering anywhere near a point shows its
+          exact value + date as a native tooltip — no client JS needed. */}
+      {pts.map((p, i) => (
+        <circle key={`h${i}`} cx={p[0]} cy={p[1]} r="12" fill="transparent">
+          <title>{`${labels[i]}: ${formatValue(data[i])}`}</title>
+        </circle>
       ))}
+      {labels.map((l, i) =>
+        i % labelStep === 0 || i === labels.length - 1 ? (
+          <text
+            key={`l${i}`}
+            x={x(i)}
+            y={h - 8}
+            fontSize="10"
+            fill="var(--color-muted)"
+            textAnchor="middle"
+          >
+            {l}
+          </text>
+        ) : null,
+      )}
     </svg>
   );
 }
@@ -84,17 +115,24 @@ export function BarChart({
   labels,
   color = "var(--color-accent-teal)",
   height = 200,
+  showValues = false,
+  formatValue = (n: number) => String(n),
 }: {
   data: number[];
   labels: string[];
   color?: string;
   height?: number;
+  /** Print each bar's value on top of it. */
+  showValues?: boolean;
+  /** Formats the on-bar value + hover tooltip. */
+  formatValue?: (n: number) => string;
 }) {
   const w = 640;
   const h = height;
   const pad = 28;
   const max = Math.max(1, Math.max(...data) * 1.1);
   const bw = ((w - pad * 2) / data.length) * 0.6;
+  const labelStep = Math.max(1, Math.ceil(data.length / 12));
   return (
     <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", height: "auto" }}>
       {data.map((v, i) => {
@@ -113,16 +151,32 @@ export function BarChart({
               rx="4"
               fill={color}
               opacity="0.85"
-            />
-            <text
-              x={x + bw / 2}
-              y={h - 8}
-              fontSize="10"
-              fill="var(--color-muted)"
-              textAnchor="middle"
             >
-              {labels[i]}
-            </text>
+              <title>{`${labels[i]}: ${formatValue(v)}`}</title>
+            </rect>
+            {showValues && (
+              <text
+                x={x + bw / 2}
+                y={h - pad - bh - 5}
+                fontSize="10"
+                fontWeight="600"
+                fill="var(--color-ink)"
+                textAnchor="middle"
+              >
+                {formatValue(v)}
+              </text>
+            )}
+            {i % labelStep === 0 || i === data.length - 1 ? (
+              <text
+                x={x + bw / 2}
+                y={h - 8}
+                fontSize="10"
+                fill="var(--color-muted)"
+                textAnchor="middle"
+              >
+                {labels[i]}
+              </text>
+            ) : null}
           </g>
         );
       })}
