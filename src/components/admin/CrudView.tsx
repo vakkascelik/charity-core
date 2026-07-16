@@ -67,6 +67,18 @@ export type CrudConfig = {
   rowHrefIcon?: string;
   rowHrefTitle?: string;
   /**
+   * An extra per-row action button, shown before the {@link rowHref}/edit/delete
+   * icons. Unlike {@link rowHref} this runs a callback (e.g. open a modal), so a
+   * config that sets it MUST be built inside a Client Component — a function
+   * can't cross the Server→Client boundary. Used by the Events screen's per-row
+   * "Invite" button.
+   */
+  rowAction?: {
+    icon: string;
+    title: string;
+    onAction: (row: Record<string, any>) => void;
+  };
+  /**
    * When set, the create/edit drawer shows a "Draft with AI" box. It POSTs
    * `{ instruction, ...currentValuesForListedFields }` to {@link AiAssist.endpoint}
    * and merges the returned field keys back into the form. The endpoint decides
@@ -252,6 +264,19 @@ export function CrudView({
                         whiteSpace: "nowrap",
                       }}
                     >
+                      {config.rowAction && (
+                        <button
+                          onClick={() => config.rowAction!.onAction(r)}
+                          title={config.rowAction.title}
+                          style={iconBtn}
+                        >
+                          <Icon
+                            name={config.rowAction.icon}
+                            size={16}
+                            color="var(--color-primary)"
+                          />
+                        </button>
+                      )}
                       {config.rowHref && (
                         <Link
                           href={fillHref(config.rowHref, r)}
