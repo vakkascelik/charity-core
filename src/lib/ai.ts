@@ -1,4 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
+import {
+  type TranslationLanguage,
+  TRANSLATION_SCHEMA,
+  translationSystem,
+} from "./translation";
 
 /**
  * Shared Claude drafting helper for the charity apps. Owns the client setup,
@@ -74,4 +79,26 @@ export async function draftStructured<T extends Record<string, unknown>>(
 /** Small helper: fold optional guidance into a polish task. */
 export function guidanceLine(instruction?: string): string {
   return instruction?.trim() ? `\nAlso apply this guidance: ${instruction.trim()}` : "";
+}
+
+/**
+ * Translate a plain-text email body into one language, for bilingual sends.
+ * Wraps `draftStructured` with the shared translation prompt/schema so a send
+ * route only needs the English text, the target language, and the org name.
+ */
+export async function translateBody(args: {
+  englishText: string;
+  lang: TranslationLanguage;
+  orgName: string;
+}): Promise<DraftOutcome<{ translation: string }>> {
+  return draftStructured<{ translation: string }>(
+    {
+      system: translationSystem({ lang: args.lang, orgName: args.orgName }),
+      task: args.englishText,
+      schema: TRANSLATION_SCHEMA,
+      // Translations can run longer than the source; give headroom over the 4000 default.
+      maxTokens: 8000,
+    },
+    ["translation"],
+  );
 }

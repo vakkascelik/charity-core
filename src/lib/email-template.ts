@@ -13,13 +13,18 @@ export function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-/** A single blank-line-separated paragraph, styled like the rest of the email body. */
-export function paragraphHtml(p: string): string {
-  return `<p style="color:#444;font-size:16px;line-height:1.65;margin:0 0 18px;font-family:sans-serif">${escapeHtml(p.trim()).replace(/\n/g, "<br>")}</p>`;
+/**
+ * A single blank-line-separated paragraph, styled like the rest of the email
+ * body. Pass `rtl` for right-to-left scripts (Arabic, Persian, Urdu…) so the
+ * text aligns and flows correctly in the client.
+ */
+export function paragraphHtml(p: string, opts?: { rtl?: boolean }): string {
+  const dir = opts?.rtl ? `direction:rtl;text-align:right;` : "";
+  return `<p style="${dir}color:#444;font-size:16px;line-height:1.65;margin:0 0 18px;font-family:sans-serif">${escapeHtml(p.trim()).replace(/\n/g, "<br>")}</p>`;
 }
 
-function renderParagraphs(bodyText: string): string {
-  return bodyText.split(/\n{2,}/).map(paragraphHtml).join("");
+export function renderParagraphs(bodyText: string, opts?: { rtl?: boolean }): string {
+  return bodyText.split(/\n{2,}/).map((p) => paragraphHtml(p, opts)).join("");
 }
 
 /**
