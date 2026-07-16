@@ -23,15 +23,23 @@ export type TranslationLanguage = {
 };
 
 /**
- * Offered in the composer, in order. Turkish leads: it's the community's
- * second language and the common case. Adding one here is enough — the
- * dropdown, the prompt, and the rendering all read from this list.
+ * The superset of languages any charity app can offer, in dropdown order.
+ * Turkish leads: it's the communities' second language and the common case.
+ * Each app's composer shows its own subset (PIF: tr/mi/ar; Raindrops: tr/es) —
+ * see `translationLanguagesFor`. Adding a language here is enough for the
+ * prompt and the rendering; the app then opts into it in its composer.
  */
 export const TRANSLATION_LANGUAGES: TranslationLanguage[] = [
   { code: "tr", label: "Turkish", endonym: "Türkçe" },
   { code: "mi", label: "te reo Māori", endonym: "Te Reo Māori" },
   { code: "ar", label: "Arabic", endonym: "العربية", rtl: true },
+  { code: "es", label: "Spanish", endonym: "Español" },
 ];
+
+/** The registry entries for an app's chosen codes, in registry order. */
+export function translationLanguagesFor(codes: readonly string[]): TranslationLanguage[] {
+  return TRANSLATION_LANGUAGES.filter((l) => codes.includes(l.code));
+}
 
 /** Resolve a posted language code. Returns null for "" / unknown — i.e. don't translate. */
 export function findTranslationLanguage(code: unknown): TranslationLanguage | null {
