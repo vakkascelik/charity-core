@@ -27,6 +27,37 @@ export function renderParagraphs(bodyText: string, opts?: { rtl?: boolean }): st
   return bodyText.split(/\n{2,}/).map((p) => paragraphHtml(p, opts)).join("");
 }
 
+/** The marker an email author puts on its own line to place a link block mid-body. */
+export const LINK_MARKER = "{{link}}";
+
+/** Remove marker paragraphs from a body (e.g. before handing it to a translator). */
+export function stripLinkMarker(bodyText: string): string {
+  return bodyText
+    .split(/\n{2,}/)
+    .filter((p) => p.trim() !== LINK_MARKER)
+    .join("\n\n");
+}
+
+/**
+ * Render body paragraphs with each `{{link}}` marker line replaced by
+ * `blockHtml` (e.g. `coverLinkBlock()` output); no marker → the block lands
+ * after the copy. Shared by the newsletter email and the audience composer's
+ * cover-image sends.
+ */
+export function renderParagraphsWithLinkBlock(
+  bodyText: string,
+  blockHtml: string,
+  opts?: { rtl?: boolean },
+): string {
+  const withMarker = bodyText.includes(LINK_MARKER)
+    ? bodyText
+    : `${bodyText}\n\n${LINK_MARKER}`;
+  return withMarker
+    .split(/\n{2,}/)
+    .map((p) => (p.trim() === LINK_MARKER ? blockHtml : paragraphHtml(p, opts)))
+    .join("");
+}
+
 /**
  * A CTA block for "read the full thing online": optional cover image (e.g.
  * a PDF's first page), an accent button, and the plain URL underneath for
