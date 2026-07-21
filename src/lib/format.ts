@@ -45,3 +45,15 @@ export function slugify(s: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+/**
+ * Picks a slug not already in `taken`, appending -2, -3… as needed. Titles
+ * repeat across years ("Community Iftar"), and a slug collision would
+ * otherwise surface as an opaque unique-constraint failure on save.
+ */
+export function uniqueSlug(base: string, taken: Set<string> | string[]): string {
+  const used = taken instanceof Set ? taken : new Set(taken);
+  let slug = base;
+  for (let n = 2; used.has(slug); n++) slug = `${base}-${n}`;
+  return slug;
+}

@@ -96,6 +96,22 @@ export type CrudConfig = {
 
 type Row = Record<string, any>;
 
+/**
+ * Best-effort human-readable reason for a failed request. A crashed route
+ * handler answers with an empty body, which would otherwise leave the operator
+ * staring at "Save failed:" — so always fall back to the status line.
+ */
+async function errorText(res: Response): Promise<string> {
+  const raw = (await res.text().catch(() => "")).trim();
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed?.error) return String(parsed.error);
+  } catch {
+    /* not JSON — use the raw text below */
+  }
+  return raw || `${res.status} ${res.statusText || "request failed"}`;
+}
+
 export function CrudView({
   config,
   rows,
@@ -150,7 +166,7 @@ export function CrudView({
         headers: { "content-type": "application/json" },
         body: JSON.stringify(record),
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) throw new Error(await errorText(res));
       setEditing(null);
       router.refresh();
     } catch (err) {
@@ -167,7 +183,7 @@ export function CrudView({
       const res = await fetch(`/api/admin/${config.resource}/${id}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) throw new Error(await errorText(res));
       router.refresh();
     } catch (err) {
       alert("Delete failed: " + (err instanceof Error ? err.message : err));
@@ -397,7 +413,18 @@ function EditDrawer({
   onClose: () => void;
   onSave: (r: Row) => void;
 }) {
-  const [form, setForm] = useState<Row>({ ...record });
+  const [form, setForm] = useState<Row>(() => {
+    // A <select> with an unset value still *renders* its first option, so the
+    // operator sees "Community" selected while the form state holds undefined —
+    // and the save posts no category at all. Seed the defaults up front so what
+    // the drawer shows is what actually gets saved.
+    const init: Row = { ...record };
+    for (const f of config.fields) {
+      if (f.type === "select" && init[f.key] == null && f.options?.length)
+        init[f.key] = f.options[0];
+    }
+    return init;
+  });
   const isNew = !form.id;
   const set = (k: string, v: unknown) =>
     setForm((f) => ({ ...f, [k]: v }));

@@ -37,7 +37,8 @@
 | `src/lib/stripe.ts` | `getStripe()` cached client + `stripeConfigured()` | `stripe` (peer) |
 | `src/lib/safe-query.ts` | `safe(promise, fallback)` — swallow DB errors during prerender/ISR | — |
 | `src/lib/revalidate.ts` | `revalidatePublic()` — drop the ISR cache under the root layout | `next/cache` |
-| `src/lib/format.ts` | `fmtDate`/`fmtMoney`/`fmtNumber` (locale/currency as args) + `fmtDuration`/`slugify` | — |
+| `src/lib/format.ts` | `fmtDate`/`fmtMoney`/`fmtNumber` (locale/currency as args) + `fmtDuration`/`slugify`/`uniqueSlug` (appends `-2`, `-3`… so repeated titles don't collide on a unique slug column) | — |
+| `src/lib/api-error.ts` | `apiError(e)` — turns a thrown Prisma/unknown error into `{ error }` JSON (maps P2002/P2025 + missing/invalid-argument validation text). Wrap admin write handlers in `try/catch` and return it, or a crash becomes a bare 500 with an empty body | `next/server` |
 | `src/components/JsonLd.tsx` | schema.org JSON-LD `<script>` renderer (XSS-safe) | react |
 | `src/components/Honeypot.tsx` | `useHoneypot()` hidden-field spam trap | react |
 | `src/components/LogoMarquee.tsx` | Auto-scrolling logo strip (self-contained `<style>`, hover-pause, reduced-motion) | react |
@@ -55,6 +56,19 @@
 | `src/components/admin/charts.tsx` | Admin chart primitives (self-contained SVG) | react |
 | `src/components/admin/format-context.tsx` | `FormatProvider`/`useFormat()` — injects locale/currency-bound `fmtDate`/`fmtMoney` into admin components | `../../lib/format` |
 | `src/components/admin/ui-feedback.tsx` | `AdminFeedbackProvider` + `useToast()`/`useConfirm()` — non-blocking toasts and an async confirm dialog to replace `alert()`/`confirm()`. Brand-agnostic (status colours read app CSS vars with neutral fallbacks). **Not yet wired** — wrap the admin root in `<AdminFeedbackProvider>` to enable | react |
+
+**`CrudView` save/error contract:**
+- **`select` fields self-seed their first option.** A `<select>` whose value is
+  unset still *renders* option 0, so the operator saw "Community" while form
+  state held `undefined` and the POST omitted the field entirely — the host app's
+  Prisma create then threw `Argument \`category\` is missing`. The edit drawer now
+  seeds every `select` default into state on open, so what's shown is what saves.
+- **Failed requests never show a blank reason.** `errorText(res)` prefers a JSON
+  `{ error }` body, falls back to raw text, then to `status + statusText` — a
+  crashed route handler returns an empty body, which previously surfaced as
+  "Save failed:" with nothing after it. Host app write routes should
+  `try/catch` and return `apiError(e)` (`src/lib/api-error.ts`) so the drawer has
+  a real message to show.
 
 **Two contracts the host app must satisfy:**
 - **Pill CSS vars.** `Pill` reads `--pill-coral-bg`, `--pill-teal-bg`, `--pill-amber-bg`,
