@@ -45,6 +45,7 @@ const ICON_PATHS: Record<string, string> = {
   eye: "M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7ZM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
   compass: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM16.2 7.8l-2 6.3-6.4 2 2-6.3 6.4-2Z",
   inbox: "M22 12h-6l-2 3H10l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z",
+  play: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM10 8.5l6 3.5-6 3.5v-7Z",
 };
 
 export type IconName = keyof typeof ICON_PATHS;
